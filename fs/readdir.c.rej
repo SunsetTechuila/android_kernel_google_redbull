@@ -1,0 +1,11 @@
+--- fs/readdir.c
++++ fs/readdir.c
+@@ -24,7 +24,7 @@
+ #include <linux/uaccess.h>
+ #ifdef CONFIG_KSU_SUSFS_SUS_PATH
+ #include <linux/susfs_def.h>
+-extern int susfs_sus_ino_for_filldir64(unsigned long ino);
++extern bool susfs_is_fuse_ino_sus_ino(unsigned long ino);
+ #endif
+ 
+ int iterate_dir(struct file *file, struct dir_context *ctx)

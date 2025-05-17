@@ -1,0 +1,31 @@
+--- fs/namei.c
++++ fs/namei.c
+@@ -3039,7 +3050,8 @@ static inline int may_create(struct vfsmount *mnt, struct inode *dir, struct den
+ 	struct user_namespace *s_user_ns;
+ 	audit_inode_child(dir, child, AUDIT_TYPE_CHILD_CREATE);
+ #ifdef CONFIG_KSU_SUSFS_SUS_PATH
+-	if (child->d_inode && unlikely(child->d_inode->i_state & INODE_STATE_SUS_PATH) && likely(current->susfs_task_state & TASK_STRUCT_NON_ROOT_USER_APP_PROC)) {
++	if (child->d_inode && susfs_need_to_spoof_sus_path(child->d_inode, child->d_inode->i_uid.val))
++	{	
+ 		error = inode_permission2(mnt, dir, MAY_WRITE | MAY_EXEC);
+ 		if (error) {
+ 			return error;
+@@ -3147,7 +3159,7 @@ static int may_open(const struct path *path, int acc_mode, int flag)
+ 		return -ENOENT;
+ 
+ #ifdef CONFIG_KSU_SUSFS_SUS_PATH
+-	if (unlikely(inode->i_state & INODE_STATE_SUS_PATH) && likely(current->susfs_task_state & TASK_STRUCT_NON_ROOT_USER_APP_PROC)) {
++	if (susfs_need_to_spoof_sus_path(inode, dentry->d_inode->i_uid.val)) {
+ 		return -ENOENT;
+ 	}
+ #endif
+@@ -3226,7 +3238,8 @@ static int may_o_create(const struct path *dir, struct dentry *dentry, umode_t m
+ #ifdef CONFIG_KSU_SUSFS_SUS_PATH
+ 	int error;
+ 
+-	if (dentry->d_inode && unlikely(dentry->d_inode->i_state & INODE_STATE_SUS_PATH) && likely(current->susfs_task_state & TASK_STRUCT_NON_ROOT_USER_APP_PROC)) {
++	if (dentry->d_inode && susfs_need_to_spoof_sus_path(dentry->d_inode, dentry->d_inode->i_uid.val))
++	{		
+ 		error = inode_permission2(dir->mnt, dir->dentry->d_inode, MAY_WRITE | MAY_EXEC);
+ 		if (error) {
+ 			return error;
